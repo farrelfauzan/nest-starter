@@ -12,12 +12,14 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RequestMiddleware } from './common/middleware/request.middleware';
+import databaseConfig from 'config/database.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      load: [databaseConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
