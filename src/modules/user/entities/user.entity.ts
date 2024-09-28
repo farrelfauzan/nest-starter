@@ -1,13 +1,14 @@
 import { Exclude } from 'class-transformer';
-import { BaseEntity } from 'src/common/base.entity';
-import { Column, Entity } from 'typeorm';
+import { BaseEntityWithDates } from '../../../common/base.entity';
+import { BeforeInsert, Column, Entity } from 'typeorm';
+import { hashPassword } from 'src/helpers/password.helpers';
 
 @Entity({
   orderBy: {
     createdAt: 'DESC',
   },
 })
-export class User extends BaseEntity {
+export class User extends BaseEntityWithDates {
   @Column()
   username: string;
 
@@ -20,7 +21,7 @@ export class User extends BaseEntity {
   @Column()
   firstName: string;
 
-  @Column()
+  @Column({ nullable: true })
   lastName: string;
 
   @Exclude()
@@ -37,4 +38,11 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   lastAccessedAt: Date;
+
+  @BeforeInsert()
+  async hashUserPassword() {
+    if (this.password) {
+      this.password = await hashPassword(this.password);
+    }
+  }
 }

@@ -15,12 +15,20 @@ export class BaseEntity extends TOBaseEntity {
 }
 
 export class BaseEntityWithDates extends BaseEntity {
-  @CreateDateColumn({ default: () => 'NOW()' })
+  @CreateDateColumn({
+    default: () => 'NOW()',
+    name: 'created_at',
+    type: 'timestamptz',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ default: () => 'NOW()', nullable: true })
+  @UpdateDateColumn({
+    default: () => 'NOW()',
+    name: 'updated_at',
+    type: 'timestamptz',
+  })
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz' })
   deletedAt: Date;
 }
