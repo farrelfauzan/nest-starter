@@ -1,15 +1,41 @@
-import { DataSource, EntityManager, Repository } from 'typeorm';
-import { ENTITIY_MANAGER_KEY } from './base-repository';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { catchError, concatMap, finalize, Observable } from 'rxjs';
+import { DataSource } from 'typeorm';
 
-export class BaseRepository {
-  constructor(
-    private dataSource: DataSource,
-    private request: Request,
-  ) {}
+export const ENTITIY_MANAGER_KEY = 'ENTITY_MANAGER_KEY';
 
-  protected getRepository<T>(entityCls: new () => T): Repository<T> {
-    const entityManager: EntityManager =
-      this.request[ENTITIY_MANAGER_KEY] ?? this.dataSource.manager;
-    return entityManager.getRepository(entityCls);
+@Injectable()
+export class TransactionInterceptor implements NestInterceptor {
+  constructor(private dataSource: DataSource) {}
+
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler<any>,
+  ): Promise<Observable<any>> {
+    const req = context.switchToHttp().getRequest<Request>();
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    req[ENTITIY_MANAGER_KEY] = queryRunner.manager;
+
+    return next.handle().pipe(
+      concatMap(async (data) => {
+        await queryRunner.commitTransaction();
+        return data;
+      }),
+      catchError(async (error) => {
+        await queryRunner.rollbackTransaction();
+        throw error;
+      }),
+      finalize(async () => {
+        await queryRunner.release();
+      }),
+    );
   }
 }
