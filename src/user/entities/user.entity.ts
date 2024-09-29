@@ -24,6 +24,9 @@ export class User extends BaseEntityWithDates {
   @Column({ nullable: true })
   lastName: string;
 
+  @Column({ nullable: true })
+  fullName: string;
+
   @Exclude()
   @Column({ nullable: true })
   accessToken?: string;

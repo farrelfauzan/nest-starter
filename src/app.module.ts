@@ -13,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RequestMiddleware } from './common/middleware/request.middleware';
 import databaseConfig from 'config/database.config';
+import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
@@ -26,6 +27,10 @@ import databaseConfig from 'config/database.config';
       useFactory: (configService: ConfigService) =>
         configService.get('database'),
       inject: [ConfigService],
+      dataSourceFactory: async (options) => {
+        const dataSource = await new DataSource(options).initialize();
+        return dataSource;
+      },
     }),
     AuthModule,
     UserModule,
