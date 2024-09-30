@@ -40,3 +40,11 @@ export const WrongPasswordError = () => {
     'The password you provided is incorrect',
   );
 };
+
+export const ExpiredAccessTokenError = () => {
+  throw new ApiError(
+    HttpStatus.UNAUTHORIZED,
+    'Access token expired',
+    'Access token expired, please re-login.',
+  );
+};

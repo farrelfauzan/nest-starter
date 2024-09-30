@@ -14,6 +14,7 @@ import { AuthLogin, AuthLoginDto } from './dto/login.dto';
 import { FindOptionsWhere } from 'typeorm';
 import { validateHash } from 'src/helpers/password.helpers';
 import { UserLoginDto } from './dto/user-login.dto';
+import { SelfRequestDto } from './dto/self-user.dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -33,6 +34,7 @@ export class AuthService {
     newUser.password = registerDto.password;
     newUser.firstName = registerDto.firstName;
     newUser.lastName = registerDto.lastName;
+    newUser.fullName = `${registerDto.firstName} ${registerDto.lastName}`;
 
     return await newUser.save();
   }
@@ -67,6 +69,23 @@ export class AuthService {
     return new AuthLoginDto(loginPayload);
   }
 
+  public async logout(self: SelfRequestDto): Promise<boolean> {
+    const { id } = self;
+
+    let user: User;
+
+    user = await User.findOneBy({
+      id: Number(id),
+    });
+
+    if (!user) UserNotFoundError();
+
+    user.accessToken = null;
+    user.save();
+
+    return true;
+  }
+
   private createLoginPayload(
     user: User,
     accessToken: string,
@@ -88,8 +107,8 @@ export class AuthService {
     user: User,
     token: { accessToken: string; refreshToken: string },
   ) {
-    let userAccessToken = user.accessToken;
-    let userRefreshToken = user.refreshToken;
+    let userAccessToken = token.accessToken;
+    let userRefreshToken = token.refreshToken;
 
     if (user.accessToken) {
       const jwt = await this.helper.decode(user.accessToken);
