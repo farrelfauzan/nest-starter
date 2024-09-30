@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import {
   ExpressAdapter,
   NestExpressApplication,
@@ -10,6 +10,9 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
+import { JwtAuthGuard } from './auth/auth.guard';
+import { RequestTimeoutInterceptor } from './interceptors/request-timout.interceptor';
+import { TransformResponseInterceptor } from './interceptors/transform-response.interceptor';
 
 const logger = new Logger('bootstrap');
 
@@ -28,6 +31,7 @@ async function bootstrap(): Promise<NestExpressApplication> {
   app.enableVersioning({
     type: VersioningType.URI,
   });
+  app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
   app.useBodyParser('json', { limit: '2mb' });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -43,6 +47,8 @@ async function bootstrap(): Promise<NestExpressApplication> {
       stopAtFirstError: true,
     }),
   );
+  app.useGlobalInterceptors(new RequestTimeoutInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
 
   await app.listen(3000);
 

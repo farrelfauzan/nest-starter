@@ -1,24 +1,23 @@
 import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-import { NextFunction } from 'express';
-
-import { z } from 'zod';
+import { NextFunction, Request, Response } from 'express';
+import { object } from 'yup';
 
 @Injectable()
 export class RequestMiddleware implements NestMiddleware {
-  async use(req: any, res: any, next: NextFunction) {
+  async use(req: Request, res: Response, next: NextFunction) {
     if (!req.body) next();
 
     try {
       if (req.body && Object.keys(req.body).length > 0) {
-        const jsonApiRequestBodySchema = z.object({
-          data: z.object({
-            type: z.string().optional(),
-            attributes: z.object({}),
-          }),
+        const jsonApiRequestBodySchema = object().shape({
+          data: object()
+            .shape({
+              attributes: object().required(),
+            })
+            .required(),
         });
-        const jsonApiBody = jsonApiRequestBodySchema.parse(req.body);
+        const jsonApiBody = jsonApiRequestBodySchema.validateSync(req.body);
         req.body = {
-          type: jsonApiBody.data.type,
           ...jsonApiBody.data.attributes,
         };
       }

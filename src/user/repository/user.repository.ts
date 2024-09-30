@@ -1,6 +1,5 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { BaseRepository } from 'src/common/transaction.interceptor';
 import { DataSource, FindOptionsWhere, ILike, In } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { User } from '../entities/user.entity';
@@ -12,6 +11,8 @@ import { PageMetaDto } from 'src/common/dto/page-meta.dto';
 import { GetUserDto } from '../dto/get-user.dto';
 import { UserDto } from '../dto/user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { Request } from 'express';
+import { BaseRepository } from 'src/common/base-repository';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UserRepository extends BaseRepository {

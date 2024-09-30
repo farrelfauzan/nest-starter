@@ -24,3 +24,27 @@ export const UserNotFoundError = () => {
     'User with this id is not found',
   );
 };
+
+export const DecryptFailedError = (reason) => {
+  throw new ApiError(
+    HttpStatus.BAD_REQUEST,
+    'Decrypt Failed',
+    `Decrypt Failed: ${reason}`,
+  );
+};
+
+export const WrongPasswordError = () => {
+  throw new ApiError(
+    HttpStatus.BAD_REQUEST,
+    'Wrong password',
+    'The password you provided is incorrect',
+  );
+};
+
+export const ExpiredAccessTokenError = () => {
+  throw new ApiError(
+    HttpStatus.UNAUTHORIZED,
+    'Access token expired',
+    'Access token expired, please re-login.',
+  );
+};
